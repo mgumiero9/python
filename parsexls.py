@@ -1,7 +1,7 @@
 import xlrd
 from zipfile import ZipFile
-datafile = "2013_ERCOT_Hourly_Load_Data.xls"
 
+datafile = "2013_ERCOT_Hourly_Load_Data.xls"
 
 def open_zip(datafile):
     with ZipFile('{0}.zip'.format(datafile), 'r') as myzip:
@@ -14,7 +14,7 @@ def parse_file(datafile):
 
     ### example on how you can get the data
     sheet_data = [[sheet.cell_value(r, col) for col in range(sheet.ncols)] for r in range(sheet.nrows)]
-
+    #print sheet_data
     ### other useful methods:
     print "\nROWS, COLUMNS, and CELLS:"
     print "Number of rows in the sheet:", 
@@ -35,12 +35,57 @@ def parse_file(datafile):
     print "Convert time to a Python datetime tuple, from the Excel float:",
     print xlrd.xldate_as_tuple(exceltime, 0)
     
+    #code here
+    
+    Vmin=99999999999999
+    Vmax=0
+    Vavg=0
+    Vrowmin=0
+    Vrowmax=0
+    Vtotal=0
+    Vcurrow=0
+    
+    for item in sheet.col_values(1):
+        if item != 'COAST':
+            Vtotal += item
+            Vcurrow += 1
+            print 'vtotal' , Vtotal
+            if item < Vmin:
+                print 'item' , item,
+                Vmin = item
+                Vrowmin = Vcurrow
+                print 'vmin', Vmin, 'vrowmin' , Vrowmin
+
+            elif item > Vmax:
+                print 'item' , item,
+                Vmax = item
+                Vrowmax = Vcurrow
+                print 'vmax' , Vmax, 'vcurrow' , Vcurrow
+        else:
+            Vcurrow += 1
+            print Vcurrow
+
+    
+    #code end
     
     data = {
-            'maxtime': (0, 0, 0, 0, 0, 0),
-            'maxvalue': 0,
-            'mintime': (0, 0, 0, 0, 0, 0),
-            'minvalue': 0,
-            'avgcoast': 0
-    }
+            'maxtime': xlrd.xldate_as_tuple(sheet.cell_value(Vrowmax - 1, 0),0),
+            'maxvalue': Vmax,
+            'mintime': xlrd.xldate_as_tuple(sheet.cell_value(Vrowmin - 1, 0),0),
+            'minvalue': Vmin,
+            'avgcoast': Vtotal / sheet.nrows
+            }
+    
+    print 'ok' , data
+    
     return data
+    
+def test():
+    open_zip(datafile)
+    data = parse_file(datafile)
+
+    assert data['maxtime'] == (2013, 8, 13, 17, 0, 0)
+    assert round(data['maxvalue'], 10) == round(18779.02551, 10)
+
+
+test()
