@@ -73,7 +73,7 @@ def parse_file(datafile):
             'maxvalue': Vmax,
             'mintime': xlrd.xldate_as_tuple(sheet.cell_value(Vrowmin - 1, 0),0),
             'minvalue': Vmin,
-            'avgcoast': Vtotal / sheet.nrows
+            'avgcoast': Vtotal / (sheet.nrows - 1)
             }
     
     print 'ok' , data
